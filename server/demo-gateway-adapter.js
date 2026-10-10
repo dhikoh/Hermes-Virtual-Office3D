@@ -2,6 +2,7 @@
 
 const http = require("http");
 const { randomUUID } = require("crypto");
+const { resOk, resErr } = require("./lib/gateway-frames");
 const { WebSocketServer } = require("ws");
 
 const ADAPTER_PORT = parseInt(process.env.DEMO_ADAPTER_PORT || "18789", 10);
@@ -61,14 +62,6 @@ function getHistory(sessionKey) {
 
 function clearHistory(sessionKey) {
   conversationHistory.delete(sessionKey);
-}
-
-function resOk(id, payload) {
-  return { type: "res", id, ok: true, payload: payload ?? {} };
-}
-
-function resErr(id, code, message) {
-  return { type: "res", id, ok: false, error: { code, message } };
 }
 
 function broadcastEvent(frame) {

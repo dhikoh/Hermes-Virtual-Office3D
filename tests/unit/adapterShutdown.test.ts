@@ -8,6 +8,8 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 const ADAPTER = path.resolve(__dirname, "../../server/hermes-gateway-adapter.js");
+// Spawns real adapter processes and waits for readiness (up to 10s); the vitest default 5s is too tight under full-suite load.
+const PROCESS_TEST_TIMEOUT_MS = 30000;
 
 describe("adapter shutdown and process supervision (WP4)", () => {
   let tempDir: string;
@@ -91,7 +93,7 @@ describe("adapter shutdown and process supervision (WP4)", () => {
 
     const result = await exitPromise;
     expect(result.code).toBe(0);
-  });
+  }, PROCESS_TEST_TIMEOUT_MS);
 
   it("exits with distinct code 98 when adapter port is already in use (EADDRINUSE)", async () => {
     const port = 19891;
@@ -128,5 +130,5 @@ describe("adapter shutdown and process supervision (WP4)", () => {
     } finally {
       await new Promise<void>((resolve) => dummyServer.close(() => resolve()));
     }
-  });
+  }, PROCESS_TEST_TIMEOUT_MS);
 });

@@ -532,11 +532,11 @@ export const AgentSettingsPanel = ({
                     <div className="flex items-center gap-1.5">
                       <span className="text-[11px] font-medium text-foreground/88">Web access</span>
                       <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-mono text-emerald-400">
-                        Camoufox Anti-Detect
+                        Isolated profile
                       </span>
                     </div>
                     <span className="text-[10px] text-muted-foreground/70">
-                      Allows this agent to browse with isolated profile &amp; anti-detect stealth.
+                      Allows this agent to browse with an isolated persistent profile.
                     </span>
                   </div>
                 </div>

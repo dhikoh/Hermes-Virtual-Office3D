@@ -26,6 +26,7 @@ const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const { WebSocketServer } = require("ws");
+const { resOk, resErr, randomId } = require("./lib/gateway-frames");
 
 const { ROLE_DEFINITIONS, validateRoleAction, resolveCapability } = require("./roles/role-matrix");
 const { toolsForCapability } = require("./roles/tool-definitions");
@@ -439,10 +440,6 @@ function getHistory(sessionKey) {
 function clearHistory(sessionKey) {
   conversationHistory.delete(sessionKey);
   saveHistoryToDisk();
-}
-
-function randomId() {
-  return require("crypto").randomBytes(8).toString("hex");
 }
 
 function redactSecrets(value) {
@@ -1196,8 +1193,6 @@ async function runAgenticLoop({ sessionKey, agentId, userMessage, model, tools, 
 // Frame builders
 // ---------------------------------------------------------------------------
 
-function resOk(id, payload) { return { type: "res", id, ok: true, payload: payload ?? {} }; }
-function resErr(id, code, message) { return { type: "res", id, ok: false, error: { code, message } }; }
 
 // ---------------------------------------------------------------------------
 // Skills registry & status

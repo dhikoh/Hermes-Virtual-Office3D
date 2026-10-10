@@ -1,8 +1,9 @@
 /**
  * Isolated Browser Research Service v2.4.0
  * Provides safe web research for Researcher agent.
- * Supports Camoufox anti-detect browser engine with per-agent persistent profile isolation (userDataDir),
- * and transparent fallback to lightweight isolated HTTP client when Camoufox binary is unavailable.
+ * Uses per-agent persistent profile isolation (userDataDir) for the Camoufox engine when it is installed
+ * (opt-in at image build via INSTALL_CAMOUFOX=true). Without it, transparently falls back to the
+ * lightweight isolated HTTP client. Camoufox is never required for the default deployment.
  * Enforces domain allowlist and writes results to <workspace>/_AI/research/
  * Based on Virtual AI Office Blueprint v2.4.0
  */
@@ -14,6 +15,7 @@ const path = require("node:path");
 const { validateRoleAction, ROLES, DEFAULT_RESEARCH_ALLOWLIST } = require("../roles/role-matrix");
 const { writeVaultDocument } = require("../vault/vault-manager");
 
+// Optional: only present when the image was built with INSTALL_CAMOUFOX=true.
 let camoufoxModule = null;
 try {
   camoufoxModule = require("camoufox");

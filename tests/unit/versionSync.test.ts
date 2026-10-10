@@ -28,6 +28,6 @@ describe("Version Synchronization (WP7)", () => {
 
     expect(changelogVersion).toBe(pkgVersion);
     expect(patchNotesVersion).toBe(pkgVersion);
-    expect(pkgVersion).toBe("1.0.14");
+    expect(pkgVersion).toBe("1.0.15");
   });
 });

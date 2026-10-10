@@ -1,10 +1,10 @@
 ---
 name: web-research
-description: Perform stealth web research, data extraction, and competitive intelligence using Camoufox anti-detect browser. Automatically stores findings to the Obsidian knowledge vault at _AI/research/.
+description: Perform web research, data extraction, and competitive intelligence with isolated browser profiles (optional Camoufox anti-detect engine). Automatically stores findings to the Obsidian knowledge vault at _AI/research/.
 metadata: {"hermes":{"skillKey":"web-research"}}
 ---
 
-# Web Research & Camoufox Intelligence SOP
+# Web Research Intelligence SOP
 
 Use this skill when researching external URLs, analyzing competitor offerings, reading online documentation, or verifying external claims.
 
@@ -32,7 +32,7 @@ Use this skill when researching external URLs, analyzing competitor offerings, r
 ## Operating Protocol
 
 1. **Anti-Detect Browsing**:
-   - Utilize Camoufox persistent agent profiles (`_AI/browser-profiles/<agentId>`) to prevent Cloudflare Turnstile blocks and bot fingerprinting.
+   - Use isolated agent profiles (`_AI/browser-profiles/<agentId>`). If the Camoufox engine is installed (image built with `INSTALL_CAMOUFOX=true`), it is used for anti-detect rendering; otherwise the isolated HTTP client is used and blocked pages must be reported, not bypassed.
    - Run requests with `saveToVault: true` to archive raw markdown snapshots.
 
 2. **Extraction Discipline**:

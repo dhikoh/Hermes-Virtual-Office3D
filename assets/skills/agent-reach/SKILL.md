@@ -1,6 +1,6 @@
 ---
 name: agent-reach
-description: Social media intel and public community extraction playbook for Twitter/X, Reddit, and LinkedIn. Uses Camoufox persistent browser profiles to retain logins and prevent bot detection.
+description: Social media intel and public community extraction playbook for Twitter/X, Reddit, and LinkedIn. Uses isolated persistent browser profiles to retain logins; optional Camoufox engine when installed.
 metadata: {"hermes":{"skillKey":"agent-reach"}}
 ---
 
@@ -33,7 +33,7 @@ Use this skill when monitoring community sentiment, competitor announcements, tr
 ## Platform Playbooks
 
 1. **Twitter / X Public Intelligence**:
-   - Navigate target profiles or search queries via persistent Camoufox profile to maintain session auth.
+   - Navigate target profiles or search queries via the agent's persistent browser profile to maintain session auth.
    - Extract top thread metrics: Views, Retweets, Likes, and dominant audience sentiment.
    - Ignore promoted ads, sponsored spam, and unrelated bot replies.
 

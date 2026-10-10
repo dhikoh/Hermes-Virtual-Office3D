@@ -25,14 +25,17 @@ RUN npm run build
 
 FROM node:22-slim AS runner
 WORKDIR /app
+# Opt-in Camoufox anti-detect engine. Default false keeps the image small and avoids the
+# large Firefox download. Set INSTALL_CAMOUFOX=true as a Coolify build argument and redeploy.
+ARG INSTALL_CAMOUFOX=false
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 # Persistent state (agent roster, chat history, settings) lives in the mounted volume.
 ENV HERMES_STATE_DIR=/app/.hermes
 
-# Install runtime libraries for Firefox / Camoufox anti-detect headless & virtual browser execution
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
+# Runtime libraries for the Camoufox (Firefox) engine. Only installed when INSTALL_CAMOUFOX=true.
+RUN if [ "$INSTALL_CAMOUFOX" = "true" ]; then \
+    apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
     libgtk-3-0 \
     libasound2 \
@@ -49,6 +52,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libcups2 \
     libdrm2 \
     libgbm1 \
+    && rm -rf /var/lib/apt/lists/*; \
+    fi
+
+# Base OS certificates are always needed for outbound HTTPS (web research, provider APIs).
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Links images to the repository on GHCR, so packages created by a push
@@ -67,9 +75,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.ts ./next.config.ts
 
-# Ensure persistent directories exist and pre-fetch Camoufox browser binary (if network reachable)
-RUN mkdir -p /app/_AI /app/.hermes /root/.camoufox /root/.cache/camoufox && \
-    (npx camoufox fetch || true)
+# Ensure persistent directories exist. Camoufox is installed and its browser binary fetched only when opted in.
+# A failed opt-in fetch fails the build on purpose: a silent skip would leave the engine unavailable without notice.
+RUN mkdir -p /app/_AI /app/.hermes && \
+    if [ "$INSTALL_CAMOUFOX" = "true" ]; then \
+      npm install --no-save --omit=dev camoufox@0.5.8 && \
+      mkdir -p /root/.camoufox /root/.cache/camoufox && \
+      npx camoufox fetch; \
+    fi
 
 EXPOSE 3000
 

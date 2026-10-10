@@ -1,5 +1,12 @@
 # Hermes3D Patch Notes
 
+## Patch v1.0.15 — Lightweight Default Deployment (Camoufox Opt-in)
+- **Camoufox removed from default install**: `camoufox` and `playwright-core` removed from `package.json` and `package-lock.json` via `npm uninstall`. `playwright-core` remains only as a transitive dependency of `@playwright/test` (e2e). Reason: the 1.29 GB Firefox download and Firefox GUI libraries made the default Coolify build heavy and prone to failure. Verified by `tests/unit/camoufoxAdapter.test.ts`.
+- **Opt-in build argument**: `Dockerfile` declares `ARG INSTALL_CAMOUFOX=false`. Only when set to `true` (Coolify build argument, then redeploy) does the image install Firefox GUI libraries, `npm install --no-save camoufox@0.5.8`, and run `npx camoufox fetch`. A failed opt-in fetch fails the build on purpose. Verified by the Dockerfile assertions in `tests/unit/camoufoxAdapter.test.ts`.
+- **Graceful fallback preserved**: `server/research/browser-service.js` still probes Camoufox at runtime. When the package is absent, `fetchIsolatedPage` uses the isolated HTTP client. No behavior change for the default deployment.
+- **Skill and UI wording**: `assets/skills/web-research`, `assets/skills/agent-reach`, `src/lib/skills/packaged.ts`, `src/lib/skills/catalog.ts`, and the UI component `src/features/agents/components/inspect/AgentSettingsPanel.tsx` no longer claim Camoufox anti-detect as default. Badge now reads "Isolated profile". Verified by `tests/unit/packagedSkills.test.ts` and `tests/unit/skillRegistryParity.test.ts`.
+- **Known Limits v1.0.15**: The default image has no anti-bot bypass. Blocked pages are reported, not bypassed. Enable Camoufox with `INSTALL_CAMOUFOX=true` at build time. Docker build was not run in this environment (no Docker daemon); the Dockerfile branch logic was verified with a shell simulation only.
+
 ## Patch v1.0.14 — Audit Remediation
 - **Mojibake Elimination & Encoding Hygiene**: Replaced 29 mojibake instances in `server/hermes-gateway-adapter.js` with Unicode escape sequences, removed UTF-8 BOM, and established `.gitattributes` and `.editorconfig`. Verified by `tests/unit/sourceEncoding.test.ts`.
 - **Role, Tool, & Agentic Loop Integration**: Integrated capability enum (`pm|developer|researcher|qa|writer`) across `server/roles/tool-definitions.js` and `server/roles/role-matrix.js`. Connected sub-agents to multi-turn agentic loops in `server/hermes-gateway-adapter.js`. Verified by `tests/unit/roleToolIntegration.test.ts` and `tests/e2e-adapter-roles.mjs`.
@@ -12,6 +19,8 @@
 - **Deduplication & Registry Parity**: Consolidated roadmap into `docs/office_sys/office-systems-roadmap.md`. Aligned 11 packaged skills in `src/lib/skills/catalog.ts` with `server/hermes-gateway-adapter.js`. Verified by `tests/unit/skillRegistryParity.test.ts`.
 - **Removed**: `docs/office-systems-roadmap.md` (duplicate file consolidated into canonical docs/office_sys/office-systems-roadmap.md).
 - **Dead Code Elimination**: Removed unused `TEAM_TOOLS` and `isOrchestrator` in `server/hermes-gateway-adapter.js`, unused `ROLES` in `server/execution/shell-executor.js`, and uncalled `save_research` action in `server/roles/role-matrix.js`.
+- **Deduplication (Gateway Frame Helpers)**: Moved identical `resOk`, `resErr`, and `randomId` out of `server/hermes-gateway-adapter.js` and `server/demo-gateway-adapter.js` into shared `server/lib/gateway-frames.js`. Both adapters import the same frame shape. Other duplicated pieces (history store, broadcast) were left in place because they differ in behavior (disk persistence vs in-memory). Covered by existing `tests/unit/demoGatewayAdapter.test.ts` and `tests/e2e-adapter-persistence.mjs` / `tests/e2e-adapter-roles.mjs`.
+- **Test Stability (adapterShutdown)**: `tests/unit/adapterShutdown.test.ts` process-spawning tests use a 30s per-test timeout. Previously the vitest 5s default timed out under full-suite load (observed once in a full run; passed on rerun).
 - **Verification Safeguards**: Created `tests/unit/patchNotesClaims.test.ts` to assert all patch notes file claims exist or are marked removed, added `docs/verification/TEMPLATE.md`, and documented verification output in `docs/verification/v1.0.14.md` and `CONTRIBUTING.md`.
 
 ### Verification
@@ -54,7 +63,7 @@
 - **Verification**: `tests/unit/agentRegistryPersistence.test.ts` (5 tests: round-trip, corrupt file, history merge, atomic write, role guard) and `tests/e2e-adapter-persistence.mjs` (real WebSocket: create, kill, restart, `agents.list`, delete, state dir honored). Run with `npm run test:e2e-adapter`. Full suite: 201 files, 1316 tests pass.
 - **Tailwind CSS Parse Fix**: The arbitrary class `[&::-webkit-details-marker]:hidden` in `src/features/agents/components/AgentChatPanel.tsx:302` produced invalid CSS and broke `/office` compilation. Replaced with the plain class `ui-thinking-summary` and a CSS rule in `src/app/globals.css`. Guarded by `tests/unit/cssBuild.test.ts`.
 - **Local Launcher**: `server/start-local.js` runs adapter (18789) and web server (3000) together and opens `/office`. `start-hermes.bat` and `stop-hermes.bat` wrap it using `%~dp0` (no hardcoded drive path).
-- **Known Limits**: Roster is persisted to disk but the UI does not yet show a roster-restore check. Phaser type errors in `src/features/office/**` and `src/features/pixel-office/**` are pre-existing and not touched by this patch.
+- **Known Limits**: Roster is persisted to disk but the UI does not yet show a roster-restore check. Phaser type errors in `src/features/office/**` and `src/features/pixel-office/**` were resolved in v1.0.14 (WP8, `src/types/phaser.d.ts`); this note was stale until v1.0.14.
 
 ## Patch v1.0.12 - Security Hardening, Audit Remediation & Engine Deduplication
 - **Security Hardening (Multi-User Auth Blocker - S1)**: Upgraded `server/access-gate.js` with `required` mode support. In multi-user deployment (`MULTI_USER=true`), missing or empty tokens are strictly rejected instead of bypassing access checks. `server/index.js` now verifies credentials on startup in multi-user mode.

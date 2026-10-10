@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.15] - 2026-10-10
+
+- Camoufox and playwright-core removed from default install; Camoufox is opt-in via Docker build arg `INSTALL_CAMOUFOX=true`. See PATCH_NOTES.md v1.0.15.
+
 ## [1.0.14] - 2026-10-10
 
 ### Fixed
